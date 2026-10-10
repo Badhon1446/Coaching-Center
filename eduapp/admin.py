@@ -1,0 +1,25 @@
+from django.contrib import admin
+from .models import Subject,Teacher, Batch,Task,Course,AuthUser,BatchSubject
+# Register your models here.
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+
+    exclude = ['create_by']
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def save_model(self, request, obj, form, change):
+        obj.create_by = request.user
+        super().save_model(request, obj, form, change)
+
+admin.site.register(Teacher)
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ['title','subject','batch','assign_teacher']
+    # prepopulated_fields = {'title':('name',)}
+admin.site.register(Batch)
+admin.site.register(Course)
+admin.site.register(AuthUser)
+admin.site.register(BatchSubject)

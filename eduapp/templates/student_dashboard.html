@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-800">My Tasks</h1>
+        <p class="text-slate-500 mt-2">View all tasks assigned to your batch.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for task in tasks %}
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition">
+            <div class="flex items-start justify-between gap-3 mb-4">
+                <h2 class="text-lg font-semibold text-slate-800">
+                    {{ task.title }}
+                </h2>
+                <span class="text-xs font-medium bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
+                    Task
+                </span>
+            </div>
+            <p class="text-sm text-slate-600 leading-6 mb-5">
+                {{ task.description|default:"No description available." }}
+            </p>
+            <div class="space-y-2 text-sm text-slate-500">
+                <p>
+                    <span class="font-medium text-slate-700">Subject:</span>
+                    {{ task.subject }}
+                </p>
+                <p>
+                    <span class="font-medium text-slate-700">Teacher:</span>
+                    {{ task.assign_teacher }}
+                </p>
+
+                <p>
+                    <span class="font-medium text-slate-700">Deadline:</span>
+                    {{ task.deadline|date:"d M Y, h:i A"|default:"Not specified" }}
+                </p>
+            </div>
+
+        </div>
+        {% empty %}
+        <div class="col-span-full bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center">
+            <div class="text-4xl mb-3">📚</div>
+            <h2 class="text-lg font-semibold text-slate-700">No Tasks Available</h2>
+            <p class="text-sm text-slate-500 mt-2">
+                Your teacher has not assigned any tasks to your batch yet.
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

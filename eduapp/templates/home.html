@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Home | Your School
+{% endblock %}
+{% block content %}
+<section class="min-h-[70vh] flex items-center justify-center px-4">
+    <div class="text-center max-w-3xl">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-100 mb-6">
+            <i class="fa-solid fa-graduation-cap text-indigo-600 text-2xl"></i>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-5">
+            Welcome to Your School
+        </h1>
+        <p class="text-lg text-slate-600 leading-8">
+            Welcome to our learning platform. Explore our courses,
+            develop your skills, and take the next step toward your
+            academic and professional success.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+
+            <a href="#"
+               class="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition">
+                Explore Courses
+            </a>
+
+            <a href="#"
+               class="px-6 py-3 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-white transition">
+                Our Services
+            </a>
+
+        </div>
+    </div>
+</section>
+{% endblock %}
