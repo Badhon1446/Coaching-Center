@@ -15,4 +15,5 @@ urlpatterns = [
     path('details-teacher-task/<int:id>/',views.details_teacher_task,name='details_teacher_task'),
     path('delete-task/<int:id>/',views.delete_task,name='delete_task'),
     path('update-task/<int:id>/',views.update_task,name='update_task'),
+    path('task/<int:task_id>/issue/', views.submit_task_issue, name='submit_task_issue'),
 ]

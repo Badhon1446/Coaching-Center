@@ -66,7 +66,7 @@ class Batch(models.Model):
         return self.seat - self.student_count()
 
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.available_seat()}"
     class Meta:
         db_table = 'Btach'
 
@@ -87,7 +87,7 @@ class BatchSubject(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.batch} - {self.subject} ({self.teacher})"
+        return f"{self.batch} - {self.subject} - ({self.teacher})"
     class Meta:
         db_table = 'BatchSubject'
         unique_together = ('batch', 'subject', 'teacher')
@@ -113,6 +113,7 @@ class Task(models.Model):
     subject = models.ForeignKey(Subject,on_delete=models.CASCADE)
     batch = models.ForeignKey(Batch,on_delete=models.CASCADE,related_name='task_batch')
     dateline = models.DateTimeField()
+    add_file = models.FileField(upload_to='tasl/',blank=True,null=True)
     description = models.TextField()
 
     def __str__(self):
@@ -120,4 +121,32 @@ class Task(models.Model):
     class Meta:
         db_table = 'Task'
 
+class TaskIssu(models.Model):
+    task = models.ForeignKey(Task,on_delete=models.CASCADE,related_name='task_issu')
+    student = models.ForeignKey(AuthUser,on_delete=models.CASCADE,related_name='student_issu')
+    issu = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.task} - {self.student}"
+    class Meta:
+        db_table = 'TaskIssu'
     
+class Result(models.Model):
+    student = models.ForeignKey(AuthUser,on_delete=models.CASCADE,related_name='result')
+    task = models.ForeignKey(Task,on_delete=models.CASCADE,related_name='result_task')
+    marks = models.DecimalField(max_digits=4, decimal_places=2,default=0)
+    assign_teacher = models.ForeignKey(Teacher,on_delete=models.CASCADE,related_name='result_teacher')
+    upload_result = models.FileField(upload_to='result/',blank=True,null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.student} - {self.task}, - {self.marks}"
+    class Meta:
+        db_table = 'Result'     
+        unique_together = ('student', 'task')
+
+
+# class Post(models.Model):
+#     title = models.CharField(max_length=250)
