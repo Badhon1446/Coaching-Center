@@ -24,10 +24,10 @@ class AuthUser(AbstractBaseUser,PermissionsMixin):
     name = models.CharField(max_length=250)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=150)
-    phone = models.CharField(max_length=11)
+    phone = models.CharField(max_length=11, blank=True, default="")
     batch = models.ForeignKey('Batch',on_delete=models.SET_NULL,null=True,blank=True,related_name='students')
     address = models.TextField(blank=True, null=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -113,13 +113,26 @@ class Task(models.Model):
     subject = models.ForeignKey(Subject,on_delete=models.CASCADE)
     batch = models.ForeignKey(Batch,on_delete=models.CASCADE,related_name='task_batch')
     dateline = models.DateTimeField()
-    add_file = models.FileField(upload_to='tasl/',blank=True,null=True)
+    add_file = models.FileField(upload_to='task/',blank=True,null=True)
     description = models.TextField()
 
     def __str__(self):
         return self.title
     class Meta:
         db_table = 'Task'
+
+class TaskSubmissions(models.Model):
+    student = models.ForeignKey(AuthUser,on_delete=models.CASCADE,related_name='student_submission')
+    task = models.ForeignKey(Task,on_delete=models.CASCADE,related_name='submission_task')
+    upload = models.FileField(upload_to='submission/')
+    note = models.CharField(max_length=250,blank=True,null=True)
+    submited_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.student
+    class Meta:
+        db_table = 'Submission'
+
 
 class TaskIssu(models.Model):
     task = models.ForeignKey(Task,on_delete=models.CASCADE,related_name='task_issu')

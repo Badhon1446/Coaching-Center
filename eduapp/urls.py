@@ -8,12 +8,19 @@ urlpatterns = [
     path('logout/',views.user_logout,name='logout'),
     path('dashboard/',views.dashboard, name='dashboard'),
 
+    #teacher side urls
     path('teacher-dashboard/',views.teacher_dashboard,name='teacher_dashboard'),
-    path('student-dashboard/',views.student_dashboard,name='student_dashboard'),
-
     path('create-task',views.create_task, name='create_task'),
     path('details-teacher-task/<int:id>/',views.details_teacher_task,name='details_teacher_task'),
     path('delete-task/<int:id>/',views.delete_task,name='delete_task'),
     path('update-task/<int:id>/',views.update_task,name='update_task'),
+    path('result/', views.select_task, name='select_task'),
+    path('result/<int:task_id>/', views.add_result, name='add_result'),
+
+    
+    #student side urls
+    path('student-dashboard/',views.student_dashboard,name='student_dashboard'),
     path('task/<int:task_id>/issue/', views.submit_task_issue, name='submit_task_issue'),
+
+
 ]

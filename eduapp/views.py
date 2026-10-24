@@ -1,8 +1,10 @@
 from django.shortcuts import render,get_object_or_404,redirect
-from .models import AuthUser,Subject,Batch,Teacher,Task,Course,BatchSubject,Result,TaskIssu
+from .models import AuthUser,Subject,Batch,Teacher,Task,Course,BatchSubject,Result,TaskIssu,TaskSubmissions
 from django.contrib import messages
 from django.contrib.auth import login as user_login,logout
 from django.contrib.auth.decorators import login_required
+from .form import TaskSubmissionForm
+from django.db.models import Count
 # Create your views here.
 
 def registration(request):
@@ -185,18 +187,44 @@ def delete_task(request, id):
     messages.success(request, 'Task has been deleted!')
 
     return redirect('teacher_dashboard')
+
+
 @login_required
 def student_dashboard(request):
     if  hasattr(request.user, 'teacher'):
         return redirect('home')
     user = request.user
     tasks = Task.objects.filter(batch=user.batch)
-    results = Result.objects.filter(batch=user.batch)
-
+    results = Result.objects.filter(task__batch=user.batch, student=user)
     return render(request, 'student_dashboard.html', {
         'tasks': tasks,
         'results': results,
     })
+
+@login_required
+def submit_task(request,id):
+    user = request.user
+    task = get_object_or_404(Task,id=id)
+    submission = TaskSubmissions.objects.filter(student=request.user, task=task).first()
+
+    if request.method == 'POST':
+        form = TaskSubmissionForm(request.POST, request.FILES, instance=submission)
+        if form.is_valid():
+            submit = form.save(commit=False)
+            submit.student = user
+            submit.task = task
+            submit.save()
+            messages.success(request,'Your task has been submited!')
+            return redirect('submit_task',id=task.id)
+    else:
+        form = TaskSubmissionForm(instance=submission)
+    return render(request,'student_dashboard.html',{
+
+                      'task':task,
+                      'form':form,
+                      'submission':submission,
+                  })
+
 
 @login_required
 def submit_task_issue(request, task_id):
@@ -211,18 +239,20 @@ def submit_task_issue(request, task_id):
 
     return redirect('student_dashboard')
 
-
 @login_required
 def select_task(request):
-    teacher = get_object_or_404(Teacher,user=request.user)
-    task = Task.objects.filter(assign_teacher=teacher).select_related('batch','subject').order_by(['dateline'])
-    return render(request,'',{'task':task})
+    teacher = get_object_or_404(Teacher, user=request.user)
+    tasks = (Task.objects.filter(assign_teacher=teacher)
+             .select_related('batch', 'subject')
+             .annotate(result_count=Count('result_task', distinct=True))
+             .order_by('dateline'))
+    return render(request, 'select_task.html', {'tasks': tasks})
 
 @login_required
-def add_result(request):
+def add_result(request,task_id):
     teacher = get_object_or_404(Teacher,user=request.user)
-    task = get_object_or_404(Task,id=task.id,assign_teacher=teacher)
-    students = AuthUser.objects.filter(batch=task.batch,is_active=True).order_by(['id'])
+    task = get_object_or_404(Task,id=task_id,assign_teacher=teacher)
+    students = AuthUser.objects.filter(batch=task.batch,is_active=True).order_by('id')
 
     if request.method == 'POST':
         for student in students:
@@ -233,7 +263,7 @@ def add_result(request):
                     student=student,
                     task=task,
                     defaults={
-                        'marsk':marks,
+                        'marks':marks,
                         'assign_teacher':teacher,
                     },
                     )
@@ -243,7 +273,7 @@ def add_result(request):
     existing = {r.student_id: r for r in Result.objects.filter(task=task)}
     rows = [{'student': s, 'result': existing.get(s.id)} for s in students]
 
-    return render(request, '', {'task': task, 'rows': rows})
+    return render(request, 'add_result.html', {'task': task, 'rows': rows})
 
 
 @login_required

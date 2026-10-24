@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Subject,Teacher, Batch,Task,Course,AuthUser,BatchSubject,Result,TaskIssu
+from .models import Subject,Teacher, Batch,Task,Course,AuthUser,BatchSubject,Result,TaskIssu,TaskSubmissions
 # Register your models here.
 
 @admin.register(Subject)
@@ -17,7 +17,7 @@ class SubjectAdmin(admin.ModelAdmin):
 admin.site.register(Teacher)
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['title','subject','batch','assign_teacher']
+    list_display = ['id','title','subject','batch','assign_teacher']
     # prepopulated_fields = {'title':('name',)}
 admin.site.register(Batch)
 admin.site.register(Course)
@@ -28,3 +28,6 @@ class AuthUserAdmin(admin.ModelAdmin):
 admin.site.register(BatchSubject)
 admin.site.register(Result)
 admin.site.register(TaskIssu)
+@admin.register(TaskSubmissions)
+class TaskSubmissionAdmin(admin.ModelAdmin):
+    list_display = ['student','task','submited_at']

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load l10n %}
+
+{% block content %}
+<div class="mx-auto max-w-4xl px-4 pt-6 pb-6 text-slate-800">
+
+  <a href="{% url 'select_task' %}" class="mb-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-700 hover:text-indigo-900">
+    <i class="fa-solid fa-arrow-left"></i> অন্য task বেছে নিন
+  </a>
+
+  <!-- Header -->
+  <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="mb-1.5 text-2xl font-bold leading-tight">{{ task.title }}</h1>
+      <ul class="flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-500">
+        <li>ব্যাচ: <strong class="font-semibold text-slate-800">{{ task.batch }}</strong></li>
+        <li>বিষয়: <strong class="font-semibold text-slate-800">{{ task.subject }}</strong></li>
+        <li>শেষ সময়: <strong class="font-semibold text-slate-800">{{ task.dateline|date:"d M Y, h:i A" }}</strong></li>
+      </ul>
+    </div>
+
+    <div class="w-full sm:w-56">
+      <p class="mb-1.5 text-sm text-slate-500">
+        <b id="arDone" class="text-lg text-slate-800">0</b> / <span id="arTotal">{{ rows|length }}</span> জনের নম্বর দেওয়া হয়েছে
+      </p>
+      <div class="h-2 overflow-hidden rounded-full bg-slate-200">
+        <div id="arBar" class="h-full w-0 bg-indigo-700 transition-all duration-200"></div>
+      </div>
+    </div>
+  </div>
+
+  {% if rows %}
+  <form method="post" id="arForm">
+    {% csrf_token %}
+
+    <!-- Search -->
+    <div class="mb-3">
+      <input type="search" id="arSearch"
+             class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm placeholder-slate-400 focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30"
+             placeholder="শিক্ষার্থীর নাম বা ID দিয়ে খুঁজুন" aria-label="শিক্ষার্থী খুঁজুন">
+    </div>
+
+    <!-- Sheet -->
+    <div id="arSheet" class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+
+      <div class="flex items-center gap-3 bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-500">
+        <div class="w-9 shrink-0"></div>
+        <div class="flex-1">শিক্ষার্থী</div>
+        <div class="hidden w-36 sm:block">অবস্থা</div>
+        <div class="w-28 text-right">নম্বর (সর্বোচ্চ 99.99)</div>
+      </div>
+
+      {% for row in rows %}
+      <div class="ar-row flex items-center gap-3 border-t border-slate-200 px-4 py-3"
+           data-search="{{ row.student|lower }} {{ row.student.id }}">
+
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-50 font-bold text-indigo-700" aria-hidden="true">
+          {{ row.student|stringformat:"s"|slice:":1"|upper }}
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <p class="truncate font-semibold">{{ row.student }}</p>
+          <p class="text-xs text-slate-500">ID: {{ row.student.id }}</p>
+        </div>
+
+        <div class="hidden w-36 sm:block">
+          {% if row.result %}
+            <span class="inline-block rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs text-indigo-700">নম্বর দেওয়া হয়েছে</span>
+          {% else %}
+            <span class="inline-block rounded-full bg-amber-50 px-2.5 py-0.5 text-xs text-amber-700">বাকি</span>
+          {% endif %}
+        </div>
+
+        <div class="w-28">
+          <input type="number"
+                 class="ar-marks w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-right text-base focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/30"
+                 name="marks_{{ row.student.id }}"
+                 id="marks_{{ row.student.id }}"
+                 min="0" max="99.99" step="0.01"
+                 inputmode="decimal"
+                 placeholder="—"
+                 value="{% if row.result %}{{ row.result.marks|unlocalize }}{% endif %}"
+                 data-original="{% if row.result %}{{ row.result.marks|unlocalize }}{% endif %}"
+                 aria-label="{{ row.student }} এর নম্বর">
+        </div>
+      </div>
+      {% endfor %}
+
+      <p id="arNoMatch" class="hidden px-4 py-10 text-center text-sm text-slate-500">এই নামে কোনো শিক্ষার্থী পাওয়া যায়নি।</p>
+    </div>
+
+    <!-- Sticky save bar: footer এর উপরে এসে থামবে -->
+    <div class="sticky bottom-0 z-20 mt-4 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg">
+      <span id="arHint" class="text-sm text-slate-500">কোনো পরিবর্তন নেই</span>
+      <button type="submit"
+              class="rounded-lg bg-indigo-700 px-6 py-2.5 font-semibold text-white hover:bg-indigo-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-700/30">
+        নম্বর সংরক্ষণ করুন
+      </button>
+    </div>
+  </form>
+
+  {% else %}
+    <div class="rounded-xl border border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500">
+      এই ব্যাচে কোনো সক্রিয় শিক্ষার্থী নেই।
+    </div>
+  {% endif %}
+</div>
+
+<script>
+(function () {
+  var inputs = document.querySelectorAll('.ar-marks');
+  if (!inputs.length) return;
+
+  var doneEl  = document.getElementById('arDone');
+  var barEl   = document.getElementById('arBar');
+  var hintEl  = document.getElementById('arHint');
+  var search  = document.getElementById('arSearch');
+  var rowsEl  = document.querySelectorAll('#arSheet .ar-row');
+  var noMatch = document.getElementById('arNoMatch');
+  var CHANGED = ['border-indigo-700', 'bg-indigo-50'];
+  var dirty = false;
+
+  function refresh() {
+    var filled = 0, changed = 0;
+    inputs.forEach(function (i) {
+      if (i.value !== '') filled++;
+      var isChanged = i.value !== i.dataset.original;
+      CHANGED.forEach(function (c) { i.classList.toggle(c, isChanged); });
+      if (isChanged) changed++;
+    });
+    doneEl.textContent = filled;
+    barEl.style.width = (filled / inputs.length * 100) + '%';
+    hintEl.textContent = changed ? changed + ' টি পরিবর্তন সংরক্ষণ বাকি' : 'কোনো পরিবর্তন নেই';
+    dirty = changed > 0;
+  }
+
+  inputs.forEach(function (i) { i.addEventListener('input', refresh); });
+  refresh();
+
+  search.addEventListener('input', function () {
+    var q = search.value.trim().toLowerCase(), shown = 0;
+    rowsEl.forEach(function (r) {
+      var match = r.dataset.search.indexOf(q) !== -1;
+      r.classList.toggle('hidden', !match);
+      r.classList.toggle('flex', match);
+      if (match) shown++;
+    });
+    noMatch.classList.toggle('hidden', shown !== 0);
+  });
+
+  document.getElementById('arForm').addEventListener('submit', function () { dirty = false; });
+  window.addEventListener('beforeunload', function (e) {
+    if (dirty) { e.preventDefault(); e.returnValue = ''; }
+  });
+})();
+</script>
+{% endblock %}
