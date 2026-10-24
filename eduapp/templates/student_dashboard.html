@@ -1,181 +1,61 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base_student.html' %}
 
-{% block title %}
-  Student Dashboard | Your School
-{% endblock %}
+{% block page_title %}Student Dashboard{% endblock %}
+{% block heading %}Student Dashboard{% endblock %}
 
-{% block content %}
-  <div class="flex min-h-screen bg-slate-50">
-    <aside id="sidebar" class="w-64 shrink-0 border-r border-slate-200 overflow-hidden transition-all duration-300">
-      <div class="w-64 h-full flex flex-col">
-        <div class="px-6 py-5 border-b border-slate-200 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-            <span class="material-icons text-emerald-600">school</span>
-          </div>
-          <div>
-            <p class="font-bold text-slate-800 leading-tight">Student Panel</p>
-            <p class="text-xs text-slate-500">{{ request.user.name }}</p>
-          </div>
-        </div>
-        <nav class="p-4 space-y-3">
-          <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-red-300 bg-red-200 text-mist-50 hover:bg-red-600 text-mist-950 hover:scale-105 transition duration-200">
-            <span class="material-icons">task_alt</span>
-            <span class="font-medium">My Task</span>
-          </a>
-          <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-200 hover:scale-105 transition duration-200">
-            <span class="material-icons">grade</span>
-            <span class="font-medium">My Result</span>
-          </a>
-          <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-200 hover:scale-105 transition duration-200">
-            <span class="material-icons">trending_up</span>
-            <span class="font-medium">My Performance</span>
-          </a>
-          <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-200 hover:scale-105 transition duration-200">
-            <span class="material-icons">payments</span>
-            <span class="font-medium">Financial Details</span>
-          </a>
-        </nav>
-        <div class="px-4 pb-4">
-          <a href="{% url 'logout' %}" class="flex items-center gap-3 px-4 py-1 rounded-lg border border-red-300 bg-red-500 text-mist-50 hover:bg-red-200 hover:scale-105 transition duration-200">
-            <span class="material-icons">logout</span>
-            <span class="font-medium">Logout</span>
-          </a>
-        </div>
-      </div>
-    </aside>
-
-    <main class="flex-1 min-w-0">
-      <div class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center gap-3">
-        <button type="button" onclick="toggleSidebar()" class="w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-600" title="Toggle Menu"><span class="material-icons">menu</span></button>
-        <h1 class="text-lg font-bold text-slate-800">Student Dashboard</h1>
-      </div>
-
-      <div class="p-4 sm:p-8 max-w-5xl">
-        <div id="section-home" class="section-view">
-          <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
-            <h2 class="text-2xl font-bold text-slate-800">Welcome, {{ request.user.name }}!</h2>
-            <p class="text-slate-500 mt-2">Here you can see your tasks, results and other information.</p>
-
-            <button type="button" onclick="toggleTaskInfo()" class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">
-              <span class="material-icons text-lg">visibility</span>
-              <span id="taskInfoBtnText">Show Task Info</span>
-            </button>
-          </div>
-          <div id="taskInfoPanel" class="hidden bg-white rounded-xl border border-slate-200">
-            <div class="px-6 py-5 border-b border-slate-200">
-              <h3 class="text-lg font-bold text-slate-800">Student Information</h3>
-            </div>
-            <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div class="border border-slate-200 rounded-lg p-4">
-                <p class="text-sm text-slate-500 mb-1">Student Name</p>
-                <p class="font-semibold text-slate-800">{{ request.user.name }}</p>
-              </div>
-              <div class="border border-slate-200 rounded-lg p-4">
-                <p class="text-sm text-slate-500 mb-1">Student ID</p>
-                <p class="font-semibold text-slate-800">{{ request.user.id }}</p>
-              </div>
-              <div class="border border-slate-200 rounded-lg p-4">
-                <p class="text-sm text-slate-500 mb-1">Batch</p>
-                <p class="font-semibold text-slate-800">{{ request.user.batch|default:'No batch assigned' }}</p>
-              </div>
-            </div>
-            <div class="px-6 py-4 border-t border-slate-200">
-              <h3 class="text-lg font-bold text-slate-800">Task Names</h3>
-            </div>
-            <div class="p-6 pt-2 space-y-3">
-              {% for task in tasks %}
-                <div>
-                  <div class="border border-slate-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                      <p class="font-semibold text-slate-800">{{ task.title }}</p>
-                      <span class="inline-block mt-1 text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">{{ task.subject }}</span>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                      <button type="button" onclick="openTaskModal('report-{{ task.id }}')" class="px-3 py-1.5 text-xs font-medium bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200">
-                        <span class="material-icons text-sm align-middle">report</span>
-                        Report Issue
-                      </button>
-                      <p class="text-sm text-slate-500">
-                        <span class="material-icons text-base align-middle">event</span>
-                        {{ task.dateline|date:'d M Y' }}
-                      </p>
-                    </div>
-                  </div>
-                  <div id="report-{{ task.id }}" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4" onclick="closeTaskModalOnBackdrop(event, 'report-{{ task.id }}')">
-                    <div class="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-                      <div class="flex items-center justify-between px-6 py-5 border-b">
-                        <div>
-                          <h2 class="text-xl font-bold text-slate-800">Report Issue</h2>
-                          <p class="text-sm text-slate-500 mt-1">{{ task.title }}</p>
-                        </div>
-                        <button type="button" onclick="closeTaskModal('report-{{ task.id }}')" class="text-slate-400 hover:text-slate-700"><span class="material-icons">close</span></button>
-                      </div>
-
-                      <form method="POST" action="{% url 'submit_task_issue' task.id %}" class="p-6 space-y-4">
-                        {% csrf_token %}
-                        <div>
-                          <label class="block text-sm font-medium text-slate-700 mb-2">Write your problem</label>
-                          <textarea name="issu" rows="5" required placeholder="write here..." class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"></textarea>
-                        </div>
-                        <div class="flex justify-end gap-3">
-                          <button type="button" onclick="closeTaskModal('report-{{ task.id }}')" class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-600 font-semibold hover:bg-slate-50">Cancel</button>
-                          <button type="submit" class="px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700">Submit</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              {% empty %}
-                <div class="text-center py-8 text-slate-500">
-                  <span class="material-icons text-4xl text-slate-300">assignment</span>
-                  <p class="mt-2">No task yet.</p>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
+{% block student_content %}
+  {# 1. Welcome #}
+  <div class="rounded-3xl p-6 sm:p-8 mb-6 text-white bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-orange-400 shadow-xl shadow-indigo-200/60">
+    <h2 class="text-2xl sm:text-3xl font-extrabold">Welcome, {{ request.user.name }}! 👋</h2>
+    <p class="mt-2 text-white/90">Here you can see your tasks, results and other information.</p>
   </div>
-  <script>
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar')
-      sidebar.classList.toggle('w-64')
-      sidebar.classList.toggle('w-0')
-    }
-    function setTaskInfo(show) {
-      const panel = document.getElementById('taskInfoPanel')
-      const btnText = document.getElementById('taskInfoBtnText')
-      panel.classList.toggle('hidden', !show)
-      btnText.textContent = show ? 'Hide Task Info' : 'Show Task Info'
-    }
-    
-    function toggleTaskInfo() {
-      const panel = document.getElementById('taskInfoPanel')
-      setTaskInfo(panel.classList.contains('hidden'))
-    }
-    function openTaskModal(modalId) {
-      const modal = document.getElementById(modalId)
-      if (modal) modal.classList.remove('hidden')
-    }
-    
-    function closeTaskModal(modalId) {
-      const modal = document.getElementById(modalId)
-      if (modal) modal.classList.add('hidden')
-    }
-    
-    function closeTaskModalOnBackdrop(event, modalId) {
-      if (event.target.id === modalId) closeTaskModal(modalId)
-    }
-    
-    document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') {
-        document.querySelectorAll('[id^="report-"]').forEach(function (modal) {
-          modal.classList.add('hidden')
-        })
-      }
-    })
-  </script>
+
+  {# 2. Student info (welcome er thik niche) #}
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+    <div class="px-6 py-4 border-b border-slate-100">
+      <h3 class="text-lg font-extrabold text-slate-800">Student Information</h3>
+    </div>
+    <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="rounded-2xl p-4 bg-indigo-50 border border-indigo-100">
+        <p class="text-sm text-indigo-600 mb-1">👤 Student Name</p>
+        <p class="font-bold text-slate-800">{{ request.user.name }}</p>
+      </div>
+      <div class="rounded-2xl p-4 bg-amber-50 border border-amber-100">
+        <p class="text-sm text-amber-600 mb-1">🪪 Student ID</p>
+        <p class="font-bold text-slate-800">{{ request.user.id }}</p>
+      </div>
+      <div class="rounded-2xl p-4 bg-emerald-50 border border-emerald-100">
+        <p class="text-sm text-emerald-600 mb-1">🏫 Batch</p>
+        <p class="font-bold text-slate-800">{{ request.user.batch|default:'No batch assigned' }}</p>
+      </div>
+    </div>
+  </div>
+
+  {# 3. Quick stats #}
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <a href="{% url 'show_task' %}" class="rounded-2xl p-5 bg-pink-100 hover:bg-pink-200 transition">
+      <p class="text-3xl font-extrabold text-pink-700">{{ tasks|length }}</p>
+      <p class="text-sm font-semibold text-pink-700/80">Total tasks</p>
+    </a>
+    <a href="{% url 'show_result' %}" class="rounded-2xl p-5 bg-amber-100 hover:bg-amber-200 transition">
+      <p class="text-3xl font-extrabold text-amber-700">{{ results|length }}</p>
+      <p class="text-sm font-semibold text-amber-700/80">Results published</p>
+    </a>
+  </div>
+
+  {# 4. Latest tasks #}
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-lg font-extrabold text-slate-800">Task Names</h3>
+    <a href="{% url 'show_task' %}" class="text-sm font-semibold text-indigo-600 hover:underline">See all</a>
+  </div>
+  <div class="space-y-3">
+    {% for task in tasks|slice:":3" %}
+      {% include 'task_card.html' with task=task %}
+    {% empty %}
+      <div class="text-center py-10 bg-white rounded-2xl border border-dashed border-slate-300 text-slate-500">
+        <p class="text-4xl">🎉</p>
+        <p class="mt-2 font-semibold">No tasks yet. Enjoy your free time!</p>
+      </div>
+    {% endfor %}
+  </div>
 {% endblock %}

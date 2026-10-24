@@ -17,9 +17,11 @@ urlpatterns = [
     path('result/', views.select_task, name='select_task'),
     path('result/<int:task_id>/', views.add_result, name='add_result'),
 
-    
+
     #student side urls
-    path('student-dashboard/',views.student_dashboard,name='student_dashboard'),
+    path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
+    path('my-task/', views.show_task, name='show_task'),
+    path('my-result/', views.show_result, name='show_result'),
     path('task/<int:task_id>/issue/', views.submit_task_issue, name='submit_task_issue'),
 
 

@@ -1,0 +1,22 @@
+{% extends 'base_student.html' %}
+
+{% block page_title %}My Task{% endblock %}
+{% block heading %}My Task{% endblock %}
+
+{% block student_content %}
+  <div class="rounded-3xl p-6 mb-6 text-white bg-gradient-to-r from-pink-500 to-orange-400 shadow-lg shadow-pink-200/60">
+    <h2 class="text-2xl font-extrabold">Your tasks 📝</h2>
+    <p class="text-white/90 mt-1">{{ tasks|length }} task{{ tasks|length|pluralize }} for {{ request.user.batch|default:'your batch' }}</p>
+  </div>
+
+  <div class="space-y-3">
+    {% for task in tasks %}
+      {% include 'task_card.html' with task=task %}
+    {% empty %}
+      <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300 text-slate-500">
+        <p class="text-4xl">🎉</p>
+        <p class="mt-2 font-semibold">No tasks yet. Enjoy your free time!</p>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

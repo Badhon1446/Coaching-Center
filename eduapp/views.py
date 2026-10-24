@@ -3,6 +3,7 @@ from .models import AuthUser,Subject,Batch,Teacher,Task,Course,BatchSubject,Resu
 from django.contrib import messages
 from django.contrib.auth import login as user_login,logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from .form import TaskSubmissionForm
 from django.db.models import Count
 # Create your views here.
@@ -61,7 +62,7 @@ def auth_login(request):
             messages.error(request, 'Invalid password!')
             return render(request, 'login.html')
 
-        user_login(request, user)
+        user_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         request.session.set_expiry(86400 * 7)
         messages.success(request, 'Login success!')
         return redirect('home')
@@ -75,6 +76,8 @@ def user_logout(request):
 def home(request):
     return render(request,'home.html')
 
+
+#dashboard_related
 
 @login_required
 def dashboard(request):
@@ -113,6 +116,23 @@ def teacher_dashboard(request):
         'subjects': my_subjects,
         'issues':issues,
     })
+
+@login_required
+def student_dashboard(request):
+    if  hasattr(request.user, 'teacher'):
+        return redirect('home')
+    user = request.user
+    tasks = Task.objects.filter(batch=user.batch)
+    results = Result.objects.filter(task__batch=user.batch, student=user)
+    return render(request, 'student_dashboard.html', {
+        'tasks': tasks,
+        'results': results,
+    })
+
+
+
+#task_related
+
 
 @login_required
 def create_task(request):
@@ -190,18 +210,6 @@ def delete_task(request, id):
 
 
 @login_required
-def student_dashboard(request):
-    if  hasattr(request.user, 'teacher'):
-        return redirect('home')
-    user = request.user
-    tasks = Task.objects.filter(batch=user.batch)
-    results = Result.objects.filter(task__batch=user.batch, student=user)
-    return render(request, 'student_dashboard.html', {
-        'tasks': tasks,
-        'results': results,
-    })
-
-@login_required
 def submit_task(request,id):
     user = request.user
     task = get_object_or_404(Task,id=id)
@@ -226,18 +234,19 @@ def submit_task(request,id):
                   })
 
 
+
 @login_required
+@require_POST
 def submit_task_issue(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-
-    text = request.POST.get('issu','').strip()
+    text = request.POST.get('issu', '').strip()
     if not text:
-        messages.error(request, 'Issue likhte hobe.')
+        messages.error(request, 'Please write your issue first.')
     else:
         TaskIssu.objects.create(task=task, student=request.user, issu=text)
-        messages.success(request, 'Tomar issue teacher ke pathano hoyeche.')
-
-    return redirect('student_dashboard')
+        messages.success(request, 'Your issue has been sent to the teacher.')
+    # je page theke submit korechho sekhanei ferot jabe
+    return redirect(request.META.get('HTTP_REFERER') or 'student_dashboard')
 
 @login_required
 def select_task(request):
@@ -247,6 +256,21 @@ def select_task(request):
              .annotate(result_count=Count('result_task', distinct=True))
              .order_by('dateline'))
     return render(request, 'select_task.html', {'tasks': tasks})
+
+
+
+def _student_tasks(user):
+    return (Task.objects.filter(batch=user.batch)
+            .select_related('subject').order_by('-dateline'))
+
+@login_required
+def show_task(request):
+    if hasattr(request.user, 'teacher'):
+        return redirect('home')
+    return render(request, 'show_task.html', {'tasks': _student_tasks(request.user)})
+
+
+# result_related
 
 @login_required
 def add_result(request,task_id):
