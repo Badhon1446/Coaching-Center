@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}
+  Task Details | Student Dashboard
+{% endblock %}
+{% block content %}
+  <div class="min-h-screen bg-slate-50 py-6 px-4">
+    <div class="max-w-4xl mx-auto">
+      <div class="mb-4">
+        <a href="{% url 'student_dashboard' %}" class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">
+          <i class="fas fa-arrow-left"></i>
+          Back to Dashboard
+        </a>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-indigo-600 px-4 py-6 sm:px-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/15 text-white"><i class="fas fa-book-open text-xl"></i></span>
+                <span class="text-sm font-medium text-indigo-100">Task Details</span>
+              </div>
+
+              <h1 class="text-2xl sm:text-3xl font-bold text-white break-words">{{ task.title }}</h1>
+
+              <p class="text-sm text-indigo-100 mt-3">Subject: {{ task.subject }}</p>
+            </div>
+
+            {% comment %} <div class="shrink-0">
+              <a href="{% url 'submit_task' task.id %}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50">
+                <i class="fas fa-paper-plane"></i>
+                Submit Task
+              </a>
+            </div> {% endcomment %}
+          </div>
+        </div>
+
+        <div class="p-6 sm:p-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm text-slate-500 mb-1">Batch</p>
+                <p class="font-semibold text-slate-800 break-words">{{ task.batch }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm text-slate-500 mb-1">Deadline</p>
+                <p class="font-semibold text-slate-800">{{ task.dateline|date:'d M Y, h:i A' }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200 sm:col-span-2">
+              <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                <i class="fas fa-chalkboard-teacher"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm text-slate-500 mb-1">Assigned Teacher</p>
+                <p class="font-semibold text-slate-800 break-words">{{ task.assign_teacher }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <i class="fas fa-align-left text-indigo-600"></i>
+              Task Description
+            </h2>
+
+            <div class="p-5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 leading-7 whitespace-pre-line break-words">{{ task.description|default:'No description provided.' }}</div>
+          </div>
+
+          <div>
+            <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <i class="fas fa-paperclip text-indigo-600"></i>
+              Task Attachment
+            </h2>
+
+            {% if task.add_file %}
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-indigo-200 bg-indigo-50">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-11 h-11 shrink-0 flex items-center justify-center rounded-lg bg-white text-indigo-600">
+                    <i class="fas fa-file-alt text-xl"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="font-semibold text-slate-800">Attached Task File</p>
+                    <p class="text-sm text-slate-500">Open or download the attached file.</p>
+                  </div>
+                </div>
+
+                <a href="{{ task.add_file.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition">
+                  <i class="fas fa-download"></i>
+                  View / Download
+                </a>
+              </div>
+            {% else %}
+              <div class="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-dashed border-slate-300">
+                <i class="fas fa-info-circle text-slate-400 text-xl"></i>
+                <p class="text-sm text-slate-500">No attachment available for this task.</p>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-slate-200 flex justify-end">
+            <a href="{% url 'submit_task' task.id %}" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition">
+              <i class="fas fa-paper-plane"></i>
+              Submit Your Answer
+            </a>
+          </div>
+        </div>
+      </div>
+      <p class="text-center text-sm text-slate-400 mt-6">Please complete the task before the deadline.</p>
+    </div>
+  </div>
+{% endblock %}

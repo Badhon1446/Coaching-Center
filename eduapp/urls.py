@@ -16,6 +16,7 @@ urlpatterns = [
     path('update-task/<int:id>/',views.update_task,name='update_task'),
     path('result/', views.select_task, name='select_task'),
     path('result/<int:task_id>/', views.add_result, name='add_result'),
+    path('teacher/task_submission',views.show_task_submission,name='show_task_submission'),
 
 
     #student side urls
@@ -23,6 +24,8 @@ urlpatterns = [
     path('my-task/', views.show_task, name='show_task'),
     path('my-result/', views.show_result, name='show_result'),
     path('task/<int:task_id>/issue/', views.submit_task_issue, name='submit_task_issue'),
+    path('task-submit/<int:id>/', views.submit_task,name='submit_task'),
+    path('task-details/<int:id>/',views.task_details_std,name='task_details_std'),
 
 
 ]

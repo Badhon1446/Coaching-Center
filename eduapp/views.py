@@ -147,6 +147,7 @@ def create_task(request):
         batch_id = request.POST.get('batch')
         dateline = request.POST.get('dateline')
         description = request.POST.get('description')
+        add_file = request.FILES.get('add_file')
 
         batch = get_object_or_404(Batch, id=batch_id, assign_teacher=teacher)
 
@@ -162,6 +163,7 @@ def create_task(request):
             batch=batch,
             dateline=dateline,
             description=description,
+            add_file = add_file,
         )
 
         messages.success(request, 'Task created successfully.')
@@ -205,34 +207,44 @@ def delete_task(request, id):
     task = get_object_or_404(Task, id=id, assign_teacher=request.user.teacher)
     task.delete()
     messages.success(request, 'Task has been deleted!')
-
     return redirect('teacher_dashboard')
 
 
 @login_required
-def submit_task(request,id):
+def submit_task(request, id):
     user = request.user
-    task = get_object_or_404(Task,id=id)
-    submission = TaskSubmissions.objects.filter(student=request.user, task=task).first()
+    task = get_object_or_404(Task, id=id, batch=user.batch)
+    submission = TaskSubmissions.objects.filter(
+        student=user,
+        task=task
+    ).first()
 
     if request.method == 'POST':
-        form = TaskSubmissionForm(request.POST, request.FILES, instance=submission)
+        form = TaskSubmissionForm(request.POST,request.FILES,instance=submission)
         if form.is_valid():
-            submit = form.save(commit=False)
-            submit.student = user
-            submit.task = task
-            submit.save()
-            messages.success(request,'Your task has been submited!')
-            return redirect('submit_task',id=task.id)
+            answer = form.cleaned_data.get('answer')
+            upload = form.cleaned_data.get('upload')
+
+            if not (answer and answer.strip()) and not upload:
+                messages.error(request, 'Please write an answer or upload a file.')
+            else:
+                submit = form.save(commit=False)
+                submit.student = user
+                submit.task = task
+                submit.save()
+                messages.success(request, 'Your task has been submitted successfully!')
+                return redirect('task_details_std', id=task.id)
+        else:
+            messages.error(request, 'Please check the submission.')
     else:
         form = TaskSubmissionForm(instance=submission)
-    return render(request,'student_dashboard.html',{
 
-                      'task':task,
-                      'form':form,
-                      'submission':submission,
-                  })
-
+    return render(request, 'task_submission.html', {
+        'task': task,
+        'student': user,
+        'form': form,
+        'submission': submission,
+    })
 
 
 @login_required
@@ -259,7 +271,7 @@ def select_task(request):
 
 
 
-def _student_tasks(user):
+def student_tasks(user):
     return (Task.objects.filter(batch=user.batch)
             .select_related('subject').order_by('-dateline'))
 
@@ -267,10 +279,23 @@ def _student_tasks(user):
 def show_task(request):
     if hasattr(request.user, 'teacher'):
         return redirect('home')
-    return render(request, 'show_task.html', {'tasks': _student_tasks(request.user)})
+    return render(request, 'show_task.html', {'tasks': student_tasks(request.user)})
 
 
-# result_related
+@login_required
+def task_details_std(request,id):
+    if hasattr(request.user, 'teacher'):
+        return redirect('home')
+    task = get_object_or_404(Task,id=id)
+    return render(request,'task_details_std.html',{'task':task})
+
+@login_required
+def show_task_submission(request):
+    teacher = request.user.teacher
+    task_submission = TaskSubmissions.objects.filter( task__assign_teacher=teacher).select_related(
+        'student', 'task', 'task__subject').order_by('-submited_at')
+    
+    return render(request,'show_task_submission.html',{'task_submission':task_submission})
 
 @login_required
 def add_result(request,task_id):
@@ -305,3 +330,9 @@ def show_result(request):
     results = (Result.objects.filter(student=request.user)
                .select_related('task', 'task__subject', 'task__batch').order_by('-created_at'))
     return render(request, 'show_result.html', {'results': results})
+
+#resource_related
+
+@login_required
+def add_resource(request):
+    pass

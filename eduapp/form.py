@@ -4,6 +4,6 @@ from .models import TaskSubmissions
 class TaskSubmissionForm(forms.ModelForm):
     class Meta:
         model = TaskSubmissions
-        fields = ['upload','note']
+        fields = ['answer', 'upload', 'note']
 
         

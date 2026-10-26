@@ -133,6 +133,7 @@ ALLOWED_HOSTS = ['.ngrok-free.app', 'localhost', '127.0.0.1','drudge-unshaken-sl
 LOGIN_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_ADAPTER = 'eduapp.adapters.CustomSocialAccountAdapter'
 # CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app']
 CSRF_TRUSTED_ORIGINS = [
     'https://drudge-unshaken-slider.ngrok-free.dev',

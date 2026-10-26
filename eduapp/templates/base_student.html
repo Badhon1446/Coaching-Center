@@ -46,7 +46,7 @@
           My Result
         </a>
 
-        {# Pore feature add korle href="#" er jaygay url dio #}
+        {% comment %} Pore feature add korle href="#" er jaygay url dite hobe {% endcomment %}
         <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-2xl font-semibold bg-sky-50 text-sky-700 hover:bg-sky-100 transition">
           <span class="w-9 h-9 rounded-xl bg-sky-200 flex items-center justify-center"><span class="material-icons text-xl">trending_up</span></span>
           <span class="flex-1">My Performance</span>
@@ -61,7 +61,6 @@
       </nav>
 
       <div class="px-4 pb-6">
-        {# Django 5+ e logout POST lage #}
         <form method="post" action="{% url 'logout' %}">
           {% csrf_token %}
           <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl font-semibold bg-rose-500 text-white hover:bg-rose-600 shadow-md shadow-rose-200 transition">

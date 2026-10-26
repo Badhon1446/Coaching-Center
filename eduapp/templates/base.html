@@ -7,22 +7,32 @@
 
     <title>
       {% block title %}
-        Your School Name
+        SUN-DIAL
       {% endblock %}
     </title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
     {# Message 4 second pore nijei sore jabe (JS lage na) #}
     <style>
       @keyframes toast-out {
-        0%, 90% { opacity: 1; transform: translateX(0); }
-        100%    { opacity: 0; transform: translateX(40px); visibility: hidden; }
+        0%,
+        90% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateX(40px);
+          visibility: hidden;
+        }
       }
-      .toast-auto { animation: toast-out 4s ease forwards; }
+      .toast-auto {
+        animation: toast-out 4s ease forwards;
+      }
     </style>
 
     {% block extra_css %}
@@ -40,7 +50,7 @@
             </div>
 
             <div>
-              <h1 class="text-xl font-bold text-slate-800">Your School</h1>
+              <h1 class="text-xl font-bold text-slate-800">SUN-DIAL</h1>
               <p class="text-xs text-slate-500">Learn • Grow • Succeed</p>
             </div>
           </a>
@@ -59,8 +69,19 @@
               </a>
               <div class="relative group">
                 <button class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-100 transition">
-                  <i class="fa-solid fa-circle-user text-indigo-600 text-lg"></i>
-                  {{ user.name }}
+                  {% for socialaccount in user.socialaccount_set.all %}
+                    {% if socialaccount.provider == 'google' %}
+                      {% if socialaccount.extra_data.picture %}
+                        <img src="{{ socialaccount.extra_data.picture }}" alt="Profile" class="w-8 h-8 rounded-full object-cover" />
+                      {% else %}
+                        <i class="fa-solid fa-circle-user text-indigo-600 text-lg"></i>
+                      {% endif %}
+                      {{ user.name|default:socialaccount.extra_data.name }}
+                    {% endif %}
+                  {% empty %}
+                    <i class="fa-solid fa-circle-user text-indigo-600 text-lg"></i>
+                    {{ user.name }}
+                  {% endfor %}
                   <i class="fa-solid fa-chevron-down text-xs"></i>
                 </button>
 
@@ -88,7 +109,13 @@
     {% if messages %}
       <div class="fixed top-24 right-5 z-[60] space-y-3 pointer-events-none">
         {% for message in messages %}
-          <div class="toast-auto flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl bg-white border-l-4 {% if message.tags == 'success' %}border-emerald-400{% elif message.tags == 'error' %}border-rose-400{% else %}border-sky-400{% endif %}">
+          <div class="toast-auto flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl bg-white border-l-4 {% if message.tags == 'success' %}
+              border-emerald-400
+            {% elif message.tags == 'error' %}
+              border-rose-400
+            {% else %}
+              border-sky-400
+            {% endif %}">
             <span class="text-xl">
               {% if message.tags == 'success' %}
                 ✅
@@ -106,6 +133,7 @@
 
     <main class="flex-1">
       {% block content %}
+
       {% endblock %}
     </main>
 

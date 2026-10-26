@@ -124,12 +124,13 @@ class Task(models.Model):
 class TaskSubmissions(models.Model):
     student = models.ForeignKey(AuthUser,on_delete=models.CASCADE,related_name='student_submission')
     task = models.ForeignKey(Task,on_delete=models.CASCADE,related_name='submission_task')
-    upload = models.FileField(upload_to='submission/')
+    upload = models.FileField(upload_to='submission_answer/',blank=True,null=True)
+    answer = models.TextField(blank=True,null=True)
     note = models.CharField(max_length=250,blank=True,null=True)
     submited_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.student
+        return f"{self.student.name} - {self.task.title}"
     class Meta:
         db_table = 'Submission'
 

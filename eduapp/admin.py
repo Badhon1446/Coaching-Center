@@ -14,7 +14,9 @@ class SubjectAdmin(admin.ModelAdmin):
         obj.create_by = request.user
         super().save_model(request, obj, form, change)
 
-admin.site.register(Teacher)
+@admin.register(Teacher)
+class TeacherAdmin(admin.ModelAdmin):
+    list_display = ['user','designation']
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     list_display = ['id','title','subject','batch','assign_teacher']
@@ -29,5 +31,7 @@ admin.site.register(BatchSubject)
 admin.site.register(Result)
 admin.site.register(TaskIssu)
 @admin.register(TaskSubmissions)
-class TaskSubmissionAdmin(admin.ModelAdmin):
-    list_display = ['student','task','submited_at']
+class TaskSubmissionsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'student', 'task', 'submited_at')
+    list_filter = ('task', 'submited_at')
+    search_fields = ('student__name', 'task__title')
