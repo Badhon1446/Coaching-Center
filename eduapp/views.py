@@ -1,11 +1,12 @@
 from django.shortcuts import render,get_object_or_404,redirect
-from .models import AuthUser,Subject,Batch,Teacher,Task,Course,BatchSubject,Result,TaskIssu,TaskSubmissions
+from .models import AuthUser,Subject,Batch,Teacher,Task,Course,BatchSubject,Result,TaskIssu,TaskSubmissions,Resource
 from django.contrib import messages
 from django.contrib.auth import login as user_login,logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from .form import TaskSubmissionForm
 from django.db.models import Count
+from django.core.exceptions import ValidationError
 # Create your views here.
 
 def registration(request):
@@ -289,13 +290,24 @@ def task_details_std(request,id):
     task = get_object_or_404(Task,id=id)
     return render(request,'task_details_std.html',{'task':task})
 
+# @login_required
+# def show_task_submission(request):
+#     teacher = request.user.teacher
+#     task_submission = TaskSubmissions.objects.filter( task__assign_teacher=teacher).select_related(
+#         'student', 'task', 'task__subject').order_by('-submited_at')
+    
+#     return render(request,'show_task_submission.html',{'task_submission':task_submission})
+
 @login_required
-def show_task_submission(request):
-    teacher = request.user.teacher
-    task_submission = TaskSubmissions.objects.filter( task__assign_teacher=teacher).select_related(
+def show_task_submission(request, task_id):
+    teacher = get_object_or_404(Teacher, user=request.user)
+    task = get_object_or_404(Task,id=task_id,assign_teacher=teacher)
+    submissions = TaskSubmissions.objects.filter( task=task).select_related(
         'student', 'task', 'task__subject').order_by('-submited_at')
     
-    return render(request,'show_task_submission.html',{'task_submission':task_submission})
+    return render(request, 'teacher_check_answers.html', {'task': task,'submissions': submissions,})
+
+
 
 @login_required
 def add_result(request,task_id):
@@ -335,4 +347,67 @@ def show_result(request):
 
 @login_required
 def add_resource(request):
-    pass
+    if not hasattr(request.user, 'teacher'):
+        messages.error(request, 'Only teachers can add resources.')
+        return render(request, 'add_resource.html')
+
+    teacher = request.user.teacher
+    batches = Batch.objects.filter(assign_teacher=teacher)
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        resource_type = request.POST.get('resource_type')
+        batch_id = request.POST.get('batch')
+        file = request.FILES.get('file')
+        video_file = request.FILES.get('video_file')
+        video_url = request.POST.get('video_url', '').strip()
+
+        if not title or not batch_id:
+            messages.error(request, 'Title and batch are required.')
+        elif resource_type not in dict(Resource.RESOURCE_TYPES):
+            messages.error(request, 'Please select a valid resource type.')
+        else:
+            batch = batches.filter(pk=batch_id).first()
+
+            if not batch:
+                messages.error(request, 'Please select a batch assigned to you.')
+            elif resource_type in ['lecture_sheet', 'documentation'] and not file:
+                messages.error(request, 'Please upload a document.')
+            elif resource_type == 'video' and bool(video_file) == bool(video_url):
+                messages.error(request, 'Upload a video or provide a video URL, not both.')
+            elif video_file and video_file.size > 20 * 1024 * 1024:
+                messages.error(request, 'Video size cannot exceed 20 MB. Please provide a video URL instead.')
+            else:
+                resource = Resource(
+                    title=title,
+                    description=description,
+                    resource_type=resource_type,
+                    file=file if resource_type in ['lecture_sheet', 'documentation'] else None,
+                    video_file=video_file if resource_type == 'video' else None,
+                    video_url=video_url if resource_type == 'video' and video_url else None,
+                    teacher=request.user,
+                    batch=batch
+                )
+
+                try:
+                    resource.full_clean()
+                    resource.save()
+                    messages.success(request, 'Resource added successfully.')
+                except (ValidationError, ValueError) as error:
+                    messages.error(request, str(error))
+
+    return render(request, 'add_resource.html', {
+        'batches': batches
+    })
+
+
+@login_required
+def my_library(request):
+    resources = Resource.objects.filter(
+        batch=request.user.batch
+    ).select_related('teacher', 'batch').order_by('-created_at')
+
+    return render(request, 'my_library.html', {
+        'resources': resources
+    })

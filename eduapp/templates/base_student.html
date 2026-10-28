@@ -40,6 +40,11 @@
           <span class="w-9 h-9 rounded-xl flex items-center justify-center {% if current == 'show_task' %}bg-white/25{% else %}bg-pink-200{% endif %}"><span class="material-icons text-xl">task_alt</span></span>
           My Task
         </a>
+        
+        <a href="{% url 'my_library' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-2xl font-semibold transition {% if current == 'my_library' %}bg-indigo-500 text-white shadow-lg shadow-indigo-200{% else %}bg-indigo-50 text-indigo-700 hover:bg-indigo-100{% endif %}">
+          <span class="w-9 h-9 rounded-xl flex items-center justify-center {% if current == 'my_library' %}bg-white/25{% else %}bg-indigo-200{% endif %}"><span class="material-icons text-xl">My Libaray</span></span>
+          My Library
+        </a>
 
         <a href="{% url 'show_result' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-2xl font-semibold transition {% if current == 'show_result' %}bg-amber-500 text-white shadow-lg shadow-amber-200{% else %}bg-amber-50 text-amber-700 hover:bg-amber-100{% endif %}">
           <span class="w-9 h-9 rounded-xl flex items-center justify-center {% if current == 'show_result' %}bg-white/25{% else %}bg-amber-200{% endif %}"><span class="material-icons text-xl">grade</span></span>

@@ -1,0 +1,130 @@
+{% extends 'base_student.html' %}
+{% block title %}
+  My Library
+{% endblock %}
+{% block content %}
+  <div class="min-h-screen bg-slate-50 px-4 py-8 sm:px-6">
+    <div class="mx-auto max-w-6xl">
+      <div class="mb-8 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-600 p-6 text-white sm:p-8">
+        <div class="flex items-center gap-4">
+          <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20">
+            <i class="fa-solid fa-book-open-reader text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl font-extrabold sm:text-3xl">My Library</h1>
+            <p class="mt-2 text-sm text-emerald-50">Your study materials, documentation and video lessons in one place.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-extrabold text-slate-800">Learning Resources</h2>
+          <p class="mt-1 text-sm text-slate-500">Explore the materials shared by your teachers.</p>
+        </div>
+        <span class="rounded-full bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-800">{{ resources|length }} Resources</span>
+      </div>
+
+      {% if resources %}
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {% for resource in resources %}
+            <div class="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md">
+              <div class="flex items-center gap-4 border-b border-slate-100 p-5">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl
+                                {% if resource.resource_type == 'video' %}
+                    
+                                    bg-teal-100 text-teal-700
+
+                  {% elif resource.resource_type == 'documentation' %}
+                    
+                                    bg-amber-100 text-amber-700
+
+                  {% else %}
+                    
+                                    bg-emerald-100 text-emerald-700
+
+                  {% endif %}">
+                  {% if resource.resource_type == 'video' %}
+                    <i class="fa-solid fa-circle-play text-xl"></i>
+                  {% elif resource.resource_type == 'documentation' %}
+                    <i class="fa-solid fa-book text-xl"></i>
+                  {% else %}
+                    <i class="fa-solid fa-file-pdf text-xl"></i>
+                  {% endif %}
+                </div>
+
+                <div class="min-w-0">
+                  <span class="text-xs font-bold uppercase tracking-wide
+                                    {% if resource.resource_type == 'video' %}
+                      
+                                        text-teal-700
+
+                    {% elif resource.resource_type == 'documentation' %}
+                      
+                                        text-amber-700
+
+                    {% else %}
+                      
+                                        text-emerald-700
+
+                    {% endif %}">
+                    {{ resource.get_resource_type_display }}
+                  </span>
+                  <h3 class="mt-1 break-words text-lg font-extrabold text-slate-800">{{ resource.title }}</h3>
+                </div>
+              </div>
+
+              <div class="flex flex-1 flex-col p-5">
+                <p class="mb-5 flex-1 whitespace-pre-line break-words text-sm leading-6 text-slate-600">
+                  {% if resource.description %}
+                    {{ resource.description }}
+                  {% else %}
+                    No description provided.
+                  {% endif %}
+                </p>
+
+                <div class="mb-4 space-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
+                  <p>
+                    <i class="fa-solid fa-chalkboard-user mr-2 text-emerald-600"></i>
+                    {{ resource.teacher.name }}
+                  </p>
+                  <p>
+                    <i class="fa-regular fa-calendar mr-2 text-emerald-600"></i>
+                    {{ resource.created_at|date:'d M Y' }}
+                  </p>
+                </div>
+
+                {% if resource.resource_type == 'video' %}
+                  {% if resource.video_url %}
+                    <a href="{{ resource.video_url }}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-teal-700">
+                      <i class="fa-solid fa-play"></i>
+                      Watch Video
+                    </a>
+                  {% elif resource.video_file %}
+                    <a href="{{ resource.video_file.url }}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-teal-700">
+                      <i class="fa-solid fa-play"></i>
+                      Watch Video
+                    </a>
+                  {% endif %}
+                {% elif resource.file %}
+                  <a href="{{ resource.file.url }}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700">
+                    <i class="fa-solid fa-arrow-down-to-line"></i>
+                    View / Download
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
+          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+            <i class="fa-solid fa-folder-open text-3xl"></i>
+          </div>
+          <h3 class="text-xl font-extrabold text-slate-800">Your Library Is Empty</h3>
+          <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">Your teachers haven't shared any resources with your batch yet. Please check back later.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

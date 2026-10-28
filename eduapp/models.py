@@ -164,3 +164,33 @@ class Result(models.Model):
 
 # class Post(models.Model):
 #     title = models.CharField(max_length=250)
+
+from django.core.validators import FileExtensionValidator
+
+class Resource(models.Model):
+    RESOURCE_TYPES = [
+        ('lecture_sheet', 'Lecture Sheet'),
+        ('documentation', 'Documentation'),
+        ('video', 'Video'),
+    ]
+
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    resource_type = models.CharField(max_length=20, choices=RESOURCE_TYPES)
+    file = models.FileField(upload_to='resources/files/',blank=True,null=True,validators=[FileExtensionValidator(['pdf', 'doc', 'docx'])])
+    video_file = models.FileField(upload_to='resources/videos/', blank=True,null=True,validators=[FileExtensionValidator(['mp4', 'webm', 'mov'])])
+    video_url = models.URLField(blank=True, null=True)
+    teacher = models.ForeignKey('AuthUser',on_delete=models.CASCADE, related_name='uploaded_resources')
+    batch = models.ForeignKey('Batch',on_delete=models.CASCADE,related_name='resources')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if self.video_file and self.video_file.size > 20 * 1024 * 1024:
+            raise ValueError("Video file size cannot exceed 20 MB.")
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'Resource'
