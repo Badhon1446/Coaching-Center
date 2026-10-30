@@ -24,12 +24,17 @@
                 </p>
             </div>
 
-            <a href="javascript:history.back()"
-               class="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-100">
-                <i class="fa-solid fa-arrow-left"></i>
-                Go Back
-            </a>
-        </div>
+                <a href="javascript:history.back()"
+                class="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-100">
+                    {% comment %} <i class="fa-solid fa-arrow-left"></i> {% endcomment %}
+                    Back to Dashboard
+                </a>
+                <a href="{% url 'teacher_show_resource' %}"
+                class="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-100">
+                    {% comment %} <i class="fa-solid fa-arrow-left"></i> {% endcomment %}
+                    View resource
+                </a>
+            </div>
 
         {% if messages %}
             <div class="mb-6 space-y-3">

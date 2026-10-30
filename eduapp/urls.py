@@ -18,6 +18,8 @@ urlpatterns = [
     path('result/<int:task_id>/', views.add_result, name='add_result'),
     path('teacher/task_submission/<int:task_id>/',views.show_task_submission,name='show_task_submission'),
     path('teacher/add-resource/', views.add_resource, name='add_resource'),
+    path('teacher/view-resource/', views.teacher_show_resource, name='teacher_show_resource'),
+    path('teacher/delete-resource/<int:id>/', views.delete_resource, name='delete_resource'),
 
     #student side urls
     path('student-dashboard/', views.student_dashboard, name='student_dashboard'),

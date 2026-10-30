@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Subject,Teacher, Batch,Task,Course,AuthUser,BatchSubject,Result,TaskIssu,TaskSubmissions
+from .models import Subject,Teacher, Batch,Task,Course,AuthUser,BatchSubject,Result,TaskIssu,TaskSubmissions,Resource
 # Register your models here.
 
 @admin.register(Subject)
@@ -35,3 +35,6 @@ class TaskSubmissionsAdmin(admin.ModelAdmin):
     list_display = ('id', 'student', 'task', 'submited_at')
     list_filter = ('task', 'submited_at')
     search_fields = ('student__name', 'task__title')
+@admin.register(Resource)
+class ResourceAdmin(admin.ModelAdmin):
+    list_display = ('title','resource_type')

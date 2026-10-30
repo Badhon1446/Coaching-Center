@@ -403,9 +403,26 @@ def add_resource(request):
 
 
 @login_required
+def teacher_show_resource(request):
+    resources = Resource.objects.filter(teacher=request.user).order_by('-created_at')
+    return render(request,'teacher_show_resource.html',{'resources': resources})
+
+@login_required
+@require_POST
+def delete_resource(request, id):
+    resource = get_object_or_404(Resource,id=id,teacher=request.user)
+    resource.delete()
+    return redirect('teacher_show_resource')
+
+
+
+
+@login_required
 def my_library(request):
-    resources = Resource.objects.filter(
-        batch=request.user.batch
+    # if not hasattr(request.user, 'student'):
+    #     messages.error(request, 'Only student can view resources.')
+    #     return render(request, 'my_library.html')
+    resources = Resource.objects.filter( batch=request.user.batch
     ).select_related('teacher', 'batch').order_by('-created_at')
 
     return render(request, 'my_library.html', {
