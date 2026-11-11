@@ -88,7 +88,7 @@
                 </button>
 
                 <div class="hidden group-hover:block absolute right-0 top-full w-40 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
-                  <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Profile</a>
+                  <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Profile</a>
                   {# Django 5+ e logout POST lage #}
                   <form method="post" action="{% url 'logout' %}">
                     {% csrf_token %}

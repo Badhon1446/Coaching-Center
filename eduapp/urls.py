@@ -20,6 +20,7 @@ urlpatterns = [
     path('teacher/add-resource/', views.add_resource, name='add_resource'),
     path('teacher/view-resource/', views.teacher_show_resource, name='teacher_show_resource'),
     path('teacher/delete-resource/<int:id>/', views.delete_resource, name='delete_resource'),
+    path('profile/', views.profile, name='profile'),
 
     #student side urls
     path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
@@ -30,5 +31,13 @@ urlpatterns = [
     path('task-details/<int:id>/',views.task_details_std,name='task_details_std'),
     path('student/my-library/', views.my_library, name='my_library'),
 
+    #blog post urls
+    # path('', views.blog_home, name='blog_home'),
+    path('blog/create/', views.blog_create, name='blog_create'),
+    path('blog/post/<slug:slug>/', views.blog_detail, name='blog_detail'),
+    path('blog/post/<slug:slug>/edit/', views.blog_edit, name='blog_edit'),
+    path('blog/post/<slug:slug>/delete/', views.blog_delete, name='blog_delete'),
+    path('blog/post/<slug:slug>/like/', views.blog_like, name='blog_like'),
+    path('blog/post/<slug:slug>/comment/<int:comment_id>/reply/',views.blog_reply,name='blog_reply'),
 
 ]

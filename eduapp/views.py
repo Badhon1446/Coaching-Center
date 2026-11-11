@@ -1,12 +1,15 @@
 from django.shortcuts import render,get_object_or_404,redirect
-from .models import AuthUser,Subject,Batch,Teacher,Task,Course,BatchSubject,Result,TaskIssu,TaskSubmissions,Resource
+from .models import AuthUser,Subject,Batch,Teacher,Task,Course,BatchSubject,Result,TaskIssu,TaskSubmissions,Resource,BlogPost, BlogComment, BlogLike, BlogCategory
 from django.contrib import messages
 from django.contrib.auth import login as user_login,logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from .form import TaskSubmissionForm
+from .form import TaskSubmissionForm,BlogPostForm, BlogCommentForm
 from django.db.models import Count
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db.models import Count, Q, Prefetch
+from django.utils.text import slugify
 # Create your views here.
 
 def registration(request):
@@ -74,8 +77,32 @@ def user_logout(request):
     logout(request)
     return redirect('login')
 
-def home(request):
-    return render(request,'home.html')
+# def home(request):
+#     return render(request,'blog/home.html')
+
+
+#profile_related
+
+@login_required
+def profile(request):
+    user = request.user
+
+    teacher = getattr(user, 'teacher', None)
+
+    google_picture = None
+    social_account = request.user.socialaccount_set.filter(provider='google').first()
+    if social_account:
+        google_picture = social_account.extra_data.get('picture')
+    
+
+    context = {
+        'profile': user,
+        'teacher': teacher,
+        'role': 'Teacher' if teacher else 'Student',
+        'google_picture': google_picture,
+}
+
+    return render(request, 'profile.html', context)
 
 
 #dashboard_related
@@ -428,3 +455,233 @@ def my_library(request):
     return render(request, 'my_library.html', {
         'resources': resources
     })
+
+
+#for blog post in home page
+
+
+
+
+
+
+
+# Helper: Check Teacher
+def get_teacher(user):
+    return getattr(user, 'teacher', None)
+
+
+# 1. Blog Home
+@login_required
+def home(request):
+    active_comments = BlogComment.objects.filter(is_active=True).select_related('user')
+    posts = BlogPost.objects.select_related('author__user', 'category').prefetch_related(
+        Prefetch('comments',queryset=active_comments, to_attr='active_comments')
+    ).annotate(
+        likes_count=Count('likes', distinct=True),
+        comments_count=Count('comments',filter=Q(comments__is_active=True),distinct=True)
+    )
+
+    teacher = get_teacher(request.user)
+
+    if teacher:
+        posts = posts.filter(Q(status='published') | Q(author=teacher))
+    else:
+        posts = posts.filter(status='published')
+
+    category_slug = request.GET.get('category')
+
+    if category_slug:
+        posts = posts.filter(category__slug=category_slug)
+
+    search_query = request.GET.get('q')
+
+    if search_query:
+        posts = posts.filter(
+            Q(title__icontains=search_query) |
+            Q(content__icontains=search_query) |
+            Q(excerpt__icontains=search_query)
+        )
+
+    paginator = Paginator(posts, 15)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    categories = BlogCategory.objects.all()
+
+    return render(request, 'blog/home.html', {
+        'posts': page_obj,
+        'page_obj': page_obj,
+        'categories': categories,
+        'selected_category': category_slug,
+        'search_query': search_query
+    })
+
+
+
+# 2. Blog Post Details
+@login_required
+def blog_detail(request, slug):
+    post = get_object_or_404(BlogPost.objects.select_related('author__user', 'category'),slug=slug)
+    teacher = get_teacher(request.user)
+
+    if post.status != 'published':
+        if not request.user.is_superuser and (not teacher or post.author_id != teacher.id):
+            messages.error(request, 'This post is not available.')
+            return redirect('home')
+
+    comments = post.comments.filter(is_active=True,parent__isnull=True).select_related('user').prefetch_related(
+        'replies__user')
+    liked = False
+
+    if request.user.is_authenticated:
+        liked = BlogLike.objects.filter(post=post,user=request.user).exists()
+    comment_form = BlogCommentForm()
+
+    if request.method == 'POST':
+        if post.status != 'published':
+            messages.error(request, 'Comments are disabled for draft posts.')
+            return redirect('blog_detail', slug=post.slug)
+
+        comment_form = BlogCommentForm(request.POST)
+
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+            comment.save()
+
+            messages.success(request, 'Comment added successfully!')
+            return redirect('blog_detail', slug=post.slug)
+
+    return render(request, 'blog/detail.html', {
+        'post': post,
+        'comments': comments,
+        'comment_form': comment_form,
+        'liked': liked,
+        'total_likes': post.likes.count(),
+        'total_comments': post.comments.filter(is_active=True).count()
+    })
+
+
+# 3. Create Blog Post (Teacher Only)
+@login_required
+def blog_create(request):
+    teacher = get_teacher(request.user)
+
+    if not teacher and not request.user.is_superuser:
+        messages.error(request, 'Only teachers can create posts.')
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = BlogPostForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+
+            if not teacher:
+                messages.error(
+                    request,
+                    'An admin account must be linked to a teacher profile to create a post.'
+                )
+                return redirect('home')
+
+            post.author = teacher
+            post.save()
+
+            messages.success(request, 'Your post has been created successfully!')
+            return redirect('blog_detail', slug=post.slug)
+
+    else:
+        form = BlogPostForm()
+
+    return render(request, 'blog/create.html', {
+        'form': form,
+        'page_title': 'Create New Post'
+    })
+
+
+# 4. Edit Blog Post (Owner Only)
+@login_required
+def blog_edit(request, slug):
+    post = get_object_or_404(BlogPost, slug=slug)
+    teacher = get_teacher(request.user)
+
+    if not teacher or post.author_id != teacher.id:
+        if not request.user.is_superuser:
+            messages.error(request, 'You cannot edit this post.')
+            return redirect('home')
+
+    if request.method == 'POST':
+        form = BlogPostForm(
+            request.POST,
+            request.FILES,
+            instance=post
+        )
+
+        if form.is_valid():
+            form.save()
+
+            messages.success(request, 'Post updated successfully!')
+            return redirect('blog_detail', slug=post.slug)
+
+    else:
+        form = BlogPostForm(instance=post)
+
+    return render(request, 'blog/edit.html', {
+        'form': form,
+        'post': post,
+        'page_title': 'Edit Post'
+    })
+
+
+# 5. Delete Blog Post (Owner Only)
+@login_required
+def blog_delete(request, slug):
+    post = get_object_or_404(BlogPost, slug=slug)
+    teacher = get_teacher(request.user)
+
+    if not teacher or post.author_id != teacher.id:
+        if not request.user.is_superuser:
+            messages.error(request, 'You cannot delete this post.')
+            return redirect('home')
+
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, 'Post deleted successfully!')
+        return redirect('home')
+
+    return render(request, 'blog/delete.html', {
+        'post': post
+    })
+
+
+# 6. Like / Unlike Post
+@login_required
+@require_POST
+def blog_like(request, slug):
+    post = get_object_or_404(BlogPost,slug=slug,status='published')
+    like, created = BlogLike.objects.get_or_create(post=post,user=request.user)
+    if not created:
+        like.delete()
+
+    return redirect('blog_detail', slug=slug)
+
+
+# 7. Reply to Comment
+@login_required
+@require_POST
+def blog_reply(request, slug, comment_id):
+    post = get_object_or_404(BlogPost,slug=slug,status='published')
+    parent_comment = get_object_or_404(BlogComment,id=comment_id,post=post,is_active=True,parent__isnull=True)
+    form = BlogCommentForm(request.POST)
+
+    if form.is_valid():
+        reply = form.save(commit=False)
+        reply.post = post
+        reply.user = request.user
+        reply.parent = parent_comment
+        reply.save()
+
+        messages.success(request, 'Reply added successfully!')
+    else:
+        messages.error(request, 'Please enter a valid reply.')
+    return redirect('blog_detail', slug=slug)

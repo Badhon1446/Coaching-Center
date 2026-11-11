@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="min-h-screen bg-slate-50 py-5 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="h-32 bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600"></div>
+        <div class="px-6 sm:px-8 pb-6">
+          <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
+            <div class="flex flex-col sm:flex-row sm:items-end gap-4 -mt-14">
+              <div class="h-28 w-28 rounded-2xl bg-orange-500 p-1.5 shadow-md shrink-0">
+                {% if profile.profile_picture %}
+                  <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="w-full h-full object-cover rounded-xl" />
+                {% elif google_picture %}
+                  <img src="{{ google_picture }}" alt="Google Profile Picture" referrerpolicy="no-referrer" class="w-full h-full object-cover rounded-xl" />
+                {% else %}
+                  <div class="w-full h-full rounded-xl bg-slate-100 flex items-center justify-center">
+                    <i class="fas fa-user text-4xl text-slate-400"></i>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="sm:pb-1">
+                <h2 class="text-2xl font-bold text-white">{{ profile.name }}</h2>
+                <p class="text-sm text-white/90 mt-1">{{ profile.email }}</p>
+                <div class="mt-2">
+                  {% if role == 'Teacher' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-emerald-700 text-xs font-semibold shadow-sm">
+                      <i class="fas fa-chalkboard-teacher"></i>
+                      Teacher
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-sky-700 text-xs font-semibold shadow-sm">
+                      <i class="fas fa-user-graduate"></i>
+                      Student
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Profile Button -->
+            <div>
+              <a href="#" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition shadow-sm">
+                <i class="fas fa-edit"></i>
+                Edit Profile
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100"></div>
+
+        <!-- Personal Information -->
+        <div class="p-6 sm:p-8">
+          <div class="mb-6">
+            <h3 class="text-lg font-bold text-slate-800">Personal Information</h3>
+            <p class="text-sm text-slate-500 mt-1">Your basic personal details.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Full Name -->
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="h-11 w-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-slate-500">Full Name</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1 break-words">{{ profile.name }}</p>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="h-11 w-11 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-slate-500">Email Address</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1 break-all">{{ profile.email }}</p>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="h-11 w-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                <i class="fas fa-phone-alt"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-slate-500">Phone Number</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">{{ profile.phone|default:'Not provided' }}</p>
+              </div>
+            </div>
+
+            <!-- Address -->
+            <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="h-11 w-11 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-slate-500">Address</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">{{ profile.address|default:'Not provided' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100"></div>
+
+        <!-- Academic / Professional Information -->
+        <div class="p-6 sm:p-8">
+          {% if role == 'Teacher' %}
+            <div class="mb-6">
+              <h3 class="text-lg font-bold text-slate-800">Professional Information</h3>
+              <p class="text-sm text-slate-500 mt-1">Your teaching and professional details.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <!-- Designation -->
+              <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="h-11 w-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <i class="fas fa-briefcase"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-medium text-slate-500">Designation</p>
+                  <p class="text-sm font-semibold text-slate-800 mt-1">{{ teacher.designation }}</p>
+                </div>
+              </div>
+
+              <!-- Joining Date -->
+              <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="h-11 w-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-medium text-slate-500">Joining Date</p>
+                  <p class="text-sm font-semibold text-slate-800 mt-1">{{ teacher.created_at|date:'d M, Y' }}</p>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="mb-6">
+              <h3 class="text-lg font-bold text-slate-800">Academic Information</h3>
+              <p class="text-sm text-slate-500 mt-1">Your current academic details.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <!-- Batch -->
+              <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="h-11 w-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-medium text-slate-500">Batch</p>
+                  <p class="text-sm font-semibold text-slate-800 mt-1">{{ profile.batch|default:'Not assigned' }}</p>
+                </div>
+              </div>
+
+              <!-- Registration Date -->
+              <div class="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="h-11 w-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-medium text-slate-500">Registration Date</p>
+                  <p class="text-sm font-semibold text-slate-800 mt-1">{{ profile.created_at|date:'d M, Y' }}</p>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Account Footer -->
+        <div class="bg-slate-50 border-t border-slate-200 px-6 sm:px-8 py-4">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <p class="text-xs text-slate-500">
+              <i class="fas fa-shield-alt text-emerald-600 mr-1"></i>
+              Your account information is protected.
+            </p>
+            <p class="text-xs text-slate-400">Member since {{ profile.created_at|date:'d M, Y' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

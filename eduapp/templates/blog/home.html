@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Teacher Blog
+{% endblock %}
+
+{% block content %}
+  <div class="min-h-screen bg-slate-50 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">Teacher Community</h1>
+          <p class="text-sm text-slate-500 mt-1">Knowledge, ideas and learning shared by our teachers.</p>
+        </div>
+
+        {% if request.user.teacher %}
+          <a href="{% url 'blog_create' %}" class="inline-flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+            <i class="fas fa-plus"></i>
+            Create Post
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Search and Category Filter -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6">
+        <form method="GET" action="{% url 'home' %}" class="flex flex-col md:flex-row gap-3">
+          <div class="flex-1 relative">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" name="q" value="{{ search_query }}" placeholder="Search posts, articles and topics..." class="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
+
+          <div class="w-full md:w-56">
+            <select name="category" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+              <option value="">All Categories</option>
+
+              {% for category in categories %}
+                {% if selected_category == category.slug %}
+                  <option value="{{ category.slug }}" selected>{{ category.name }}</option>
+                {% else %}
+                  <option value="{{ category.slug }}">{{ category.name }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <button type="submit" class="px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl transition"><i class="fas fa-search mr-1"></i> Search</button>
+
+          <a href="{% url 'home' %}" class="px-5 py-3 text-center border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium rounded-xl transition">Reset</a>
+        </form>
+      </div>
+
+      <!-- Post Feed -->
+      {% if posts %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {% for post in posts %}
+            <article class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition duration-300 overflow-hidden flex flex-col">
+              <!-- Author Header -->
+              <div class="p-4 flex items-center gap-3">
+                <div class="w-11 h-11 shrink-0 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700">
+                  <i class="fas fa-user text-lg"></i>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-sm font-bold text-slate-800 truncate">{{ post.author.user.get_full_name|default:post.author.user.email }}</h3>
+
+                  <p class="text-xs text-slate-400 mt-1">
+                    <i class="far fa-calendar-alt mr-1"></i>
+                    {{ post.published_at|date:'d M, Y' }}
+                  </p>
+                </div>
+
+                {% if post.category %}
+                  <span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full shrink-0">{{ post.category.name }}</span>
+                {% endif %}
+              </div>
+
+              <!-- Post Text -->
+              <div class="px-4 pb-3">
+                <h2 class="text-lg font-bold text-slate-800 leading-snug mb-2"><a href="{% url 'blog_detail' post.slug %}" class="hover:text-emerald-700 transition">{{ post.title }}</a></h2>
+
+                <p class="text-sm text-slate-600 leading-6 break-words">
+                  {{ post.content|truncatewords:35 }}
+                  {% if post.content|wordcount > 35 %}
+                    <a href="{% url 'blog_detail' post.slug %}" class="text-emerald-600 font-semibold hover:underline whitespace-nowrap">Read More</a>
+                  {% endif %}
+                </p>
+              </div>
+
+              <!-- Cover Image -->
+              {% if post.cover_image %}
+                <a href="{% url 'blog_detail' post.slug %}" class="block"><img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full max-h-80 object-cover" /></a>
+              {% endif %}
+
+              <!-- Like and View Count -->
+              <div class="px-4 py-3 flex items-center justify-between text-sm text-slate-500">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center text-red-500"><i class="fas fa-heart text-xs"></i></span>
+                  <span>{{ post.likes_count|default:0 }} Likes</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <i class="far fa-eye text-slate-400"></i>
+                  <span>{{ post.views_count|default:0 }} Views</span>
+                </div>
+              </div>
+
+              <div class="border-t border-slate-100 mx-4"></div>
+
+              <!-- Comment Preview -->
+
+              <!-- Recent Comments -->
+              <div class="space-y-3">
+                {% for comment in post.active_comments %}
+                  <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                      <i class="fas fa-user text-emerald-600 text-xs"></i>
+                    </div>
+
+                    <div class="flex-1">
+                      <p class="text-xs font-semibold text-slate-700">{{ comment.user.name }}</p>
+
+                      <p class="text-sm text-slate-600">{{ comment.content|truncatechars:100 }}</p>
+
+                      <span class="text-xs text-slate-400">{{ comment.created_at|timesince }} ago</span>
+                    </div>
+                  </div>
+                {% empty %}
+                  <p class="text-sm text-slate-400">No comments yet.</p>
+                {% endfor %}
+              </div>
+
+              <!-- Read Post Button -->
+              <div class="px-4 pb-4 mt-auto">
+                <a href="{% url 'blog_detail' post.slug %}" class="block w-full text-center py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-sm transition">
+                  Read Post & Join Discussion
+                  <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+          <div class="flex justify-center items-center gap-2 mt-10">
+            {% if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&category={{ selected_category }}" class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+
+            <span class="px-5 py-2.5 bg-emerald-600 text-white rounded-lg font-semibold">{{ page_obj.number }}</span>
+
+            <span class="text-sm text-slate-400">of {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&category={{ selected_category }}" class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% else %}
+        <!-- Empty State -->
+        <div class="bg-white border border-slate-200 rounded-2xl py-20 px-5 text-center">
+          <div class="w-20 h-20 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-5">
+            <i class="fas fa-newspaper text-3xl text-slate-400"></i>
+          </div>
+
+          <h3 class="text-xl font-bold text-slate-800 mb-2">No Posts Found</h3>
+
+          <p class="text-slate-500 max-w-md mx-auto">No articles are available at the moment. Be the first to share something with the community.</p>
+
+          {% if request.user.teacher %}
+            <a href="{% url 'blog_create' %}" class="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition">
+              <i class="fas fa-plus"></i>
+              Create First Post
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

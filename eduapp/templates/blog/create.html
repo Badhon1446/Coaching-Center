@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create New Post | Teacher Blog{% endblock %}
+
+{% block content %}
+
+<style>
+    .blog-form input:not([type="checkbox"]):not([type="file"]),
+    .blog-form select,
+    .blog-form textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        outline: none;
+        background: #fff;
+        color: #334155;
+        transition: all 0.2s;
+    }
+
+    .blog-form input:focus,
+    .blog-form select:focus,
+    .blog-form textarea:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+    }
+
+    .blog-form input[type="file"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+
+    .blog-form .errorlist {
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 5px;
+        list-style: none;
+    }
+</style>
+
+<div class="min-h-screen bg-slate-50 py-10">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Back Navigation -->
+        <a href="{% url 'home' %}"
+            class="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-600 mb-6 transition">
+            <i class="fas fa-arrow-left"></i>
+            Back to Blog
+        </a>
+
+        <!-- Form Container -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+            <!-- Header -->
+            <div class="bg-slate-800 px-6 md:px-8 py-7">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <i class="fas fa-pen-nib text-xl"></i>
+                    </div>
+
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">
+                            Create New Post
+                        </h1>
+                        <p class="text-slate-300 text-sm mt-1">
+                            Share your knowledge and ideas with students.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Body -->
+            <div class="p-6 md:p-8">
+
+                <form method="POST" enctype="multipart/form-data" class="blog-form space-y-6">
+
+                    {% csrf_token %}
+
+                    <!-- General Errors -->
+                    {% if form.non_field_errors %}
+                    <div class="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-sm">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Post Title -->
+                    <div>
+                        <label for="{{ form.title.id_for_label }}"
+                            class="block text-sm font-semibold text-slate-700 mb-2">
+                            Post Title <span class="text-red-500">*</span>
+                        </label>
+
+                        {{ form.title }}
+
+                        {% if form.title.errors %}
+                        <div class="text-red-600 text-sm mt-1">
+                            {{ form.title.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Category and Status -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        <div>
+                            <label for="{{ form.category.id_for_label }}"
+                                class="block text-sm font-semibold text-slate-700 mb-2">
+                                Category <span class="text-red-500">*</span>
+                            </label>
+
+                            {{ form.category }}
+
+                            {% if form.category.errors %}
+                            <div class="text-red-600 text-sm mt-1">
+                                {{ form.category.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.status.id_for_label }}"
+                                class="block text-sm font-semibold text-slate-700 mb-2">
+                                Publication Status
+                            </label>
+
+                            {{ form.status }}
+
+                            <p class="text-xs text-slate-400 mt-2">
+                                Choose whether to publish now or save as a draft.
+                            </p>
+
+                            {% if form.status.errors %}
+                            <div class="text-red-600 text-sm mt-1">
+                                {{ form.status.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+                    <!-- Excerpt -->
+                    <div>
+                        <label for="{{ form.excerpt.id_for_label }}"
+                            class="block text-sm font-semibold text-slate-700 mb-2">
+                            Short Description
+                        </label>
+
+                        {{ form.excerpt }}
+
+                        <p class="text-xs text-slate-400 mt-2">
+                            Write a short introduction about your article.
+                        </p>
+
+                        {% if form.excerpt.errors %}
+                        <div class="text-red-600 text-sm mt-1">
+                            {{ form.excerpt.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Article Content -->
+                    <div>
+                        <label for="{{ form.content.id_for_label }}"
+                            class="block text-sm font-semibold text-slate-700 mb-2">
+                            Article Content <span class="text-red-500">*</span>
+                        </label>
+
+                        {{ form.content }}
+
+                        <p class="text-xs text-slate-400 mt-2">
+                            Write your complete article, educational content or course details.
+                        </p>
+
+                        {% if form.content.errors %}
+                        <div class="text-red-600 text-sm mt-1">
+                            {{ form.content.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Cover Image -->
+                    <div>
+                        <label for="{{ form.cover_image.id_for_label }}"
+                            class="block text-sm font-semibold text-slate-700 mb-2">
+                            Cover Image
+                        </label>
+
+                        {{ form.cover_image }}
+
+                        <p class="text-xs text-slate-400 mt-2">
+                            Upload an image to make your article more attractive.
+                        </p>
+
+                        {% if form.cover_image.errors %}
+                        <div class="text-red-600 text-sm mt-1">
+                            {{ form.cover_image.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-100 pt-6">
+
+                        <a href="{% url 'home' %}"
+                            class="px-6 py-3 text-center border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold rounded-xl transition">
+                            Cancel
+                        </a>
+
+                        <button type="submit"
+                            class="px-7 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-sm transition">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Create Post
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
